@@ -1,24 +1,83 @@
 import { INITIAL_DATA } from '../constants/finance'
 
-const STORAGE_KEY = 'finhome-data'
+const DB_NAME = 'finhome'
+const DB_VERSION = 1
+const DATA_STORE = 'appData'
+const OUTBOX_STORE = 'outbox'
+const METADATA_STORE = 'metadata'
+const DATA_KEY = 'finance-data'
+const LEGACY_STORAGE_KEY = 'finhome-data'
 
-export function loadFinanceData() {
+function openDatabase() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION)
+    request.onupgradeneeded = () => {
+      const database = request.result
+      if (!database.objectStoreNames.contains(DATA_STORE)) database.createObjectStore(DATA_STORE)
+      if (!database.objectStoreNames.contains(OUTBOX_STORE)) database.createObjectStore(OUTBOX_STORE, { keyPath: 'mutationId' })
+      if (!database.objectStoreNames.contains(METADATA_STORE)) database.createObjectStore(METADATA_STORE)
+    }
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+    request.onblocked = () => reject(new Error('Открытие IndexedDB заблокировано другой вкладкой'))
+  })
+}
+
+async function readFromStore(storeName, key) {
+  const database = await openDatabase()
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(storeName, 'readonly')
+    const request = transaction.objectStore(storeName).get(key)
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+    transaction.oncomplete = () => database.close()
+  })
+}
+
+async function writeToStore(storeName, key, value) {
+  const database = await openDatabase()
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(storeName, 'readwrite')
+    transaction.objectStore(storeName).put(value, key)
+    transaction.oncomplete = () => { database.close(); resolve() }
+    transaction.onerror = () => reject(transaction.error)
+    transaction.onabort = () => reject(transaction.error)
+  })
+}
+
+function normalizeData(saved) {
+  if (!saved) return structuredClone(INITIAL_DATA)
+
+  // Миграция данных ранней версии, где хранились только названия банков.
+  const cards = saved.cards || (saved.banks || []).map((bank, index) => ({
+    id: `legacy-card-${index}`,
+    name: 'Основная карта',
+    bank,
+    currency: 'BYN',
+  }))
+  return { ...structuredClone(INITIAL_DATA), ...saved, cards, debts: saved.debts || [] }
+}
+
+export async function loadFinanceData() {
   try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY))
-    if (!saved) return INITIAL_DATA
-    // Миграция данных ранней версии, где хранились только названия банков.
-    const cards = saved.cards || (saved.banks || []).map((bank, index) => ({
-      id: `legacy-card-${index}`,
-      name: 'Основная карта',
-      bank,
-      currency: 'BYN',
-    }))
-    return { ...INITIAL_DATA, ...saved, cards, debts: saved.debts || [] }
-  } catch {
-    return INITIAL_DATA
+    const saved = await readFromStore(DATA_STORE, DATA_KEY)
+    if (saved) return normalizeData(saved)
+
+    const legacyData = JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY))
+    const migratedData = normalizeData(legacyData)
+    await writeToStore(DATA_STORE, DATA_KEY, migratedData)
+    if (legacyData) localStorage.removeItem(LEGACY_STORAGE_KEY)
+    return migratedData
+  } catch (error) {
+    console.warn('Не удалось загрузить данные из IndexedDB:', error)
+    try {
+      return normalizeData(JSON.parse(localStorage.getItem(LEGACY_STORAGE_KEY)))
+    } catch {
+      return normalizeData(null)
+    }
   }
 }
 
-export function saveFinanceData(data) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+export async function saveFinanceData(data) {
+  await writeToStore(DATA_STORE, DATA_KEY, data)
 }

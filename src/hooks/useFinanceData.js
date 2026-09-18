@@ -2,14 +2,30 @@ import { useEffect, useMemo, useState } from 'react'
 import { calculateTotals } from '../utils/calculations'
 import { loadFinanceData, saveFinanceData } from '../utils/storage'
 import { fetchNBRBRates } from '../utils/currencyApi'
+import { INITIAL_DATA } from '../constants/finance'
 
 export function useFinanceData() {
-  const [data, setData] = useState(loadFinanceData)
+  const [data, setData] = useState(() => structuredClone(INITIAL_DATA))
+  const [isLoaded, setIsLoaded] = useState(false)
   const totals = useMemo(() => calculateTotals(data.transactions), [data.transactions])
 
-  useEffect(() => saveFinanceData(data), [data])
+  useEffect(() => {
+    let active = true
+    loadFinanceData().then((savedData) => {
+      if (!active) return
+      setData(savedData)
+      setIsLoaded(true)
+    })
+    return () => { active = false }
+  }, [])
 
   useEffect(() => {
+    if (!isLoaded) return
+    saveFinanceData(data).catch((error) => console.warn('Не удалось сохранить данные в IndexedDB:', error))
+  }, [data, isLoaded])
+
+  useEffect(() => {
+    if (!isLoaded) return undefined
     const controller = new AbortController()
     fetchNBRBRates(controller.signal)
       .then(({ rates, updatedAt }) => setData((current) => ({ ...current, rates, ratesUpdatedAt: updatedAt })))
@@ -17,7 +33,7 @@ export function useFinanceData() {
         if (error.name !== 'AbortError') console.warn('Не удалось обновить курсы НБРБ:', error)
       })
     return () => controller.abort()
-  }, [])
+  }, [isLoaded])
 
   function addTransaction(transaction) {
     setData((current) => ({
