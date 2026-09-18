@@ -34,7 +34,7 @@ export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData 
         if (!result.ok) throw new Error(result.error || 'Ошибка синхронизации')
 
         const remoteStates = result.changes.filter((change) => change.entity === 'appState' && change.action === 'upsert')
-        await Promise.all([removeFromOutbox(result.acceptedMutationIds || []), setLastSeq(result.lastSeq)])
+        await removeFromOutbox(result.acceptedMutationIds || [])
         const remainingMutations = await getOutbox()
 
         // Не применяем ответ, если пользователь успел изменить данные во время запроса.
@@ -50,6 +50,8 @@ export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData 
           await saveFinanceData(latestRemote.payload)
           remoteDataRef.current(latestRemote.payload)
         }
+        // Продвигаем курсор только после того, как удалённое состояние применено.
+        await setLastSeq(result.lastSeq)
 
         if (attempt === 0 && lastSeq === 0 && mutations.length === 0 && remoteStates.length === 0) {
           await queueFinanceData(dataRef.current)

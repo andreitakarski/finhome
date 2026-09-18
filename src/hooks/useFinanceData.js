@@ -42,7 +42,12 @@ export function useFinanceData() {
     if (!isLoaded) return undefined
     const controller = new AbortController()
     fetchNBRBRates(controller.signal)
-      .then(({ rates, updatedAt }) => setData((current) => ({ ...current, rates, ratesUpdatedAt: updatedAt })))
+      .then(({ rates, updatedAt }) => {
+        // Курсы являются внешними справочными данными и не должны создавать
+        // облачную версию пустого состояния на новом устройстве.
+        applyingRemoteData.current = true
+        setData((current) => ({ ...current, rates, ratesUpdatedAt: updatedAt }))
+      })
       .catch((error) => {
         if (error.name !== 'AbortError') console.warn('Не удалось обновить курсы НБРБ:', error)
       })
