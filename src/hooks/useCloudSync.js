@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { SYNC_API_URL } from '../constants/sync'
-import { getDeviceId, getLastSeq, getOutbox, queueFinanceData, removeFromOutbox, saveFinanceData, setLastSeq } from '../utils/storage'
+import { getDeviceId, getLastSeq, getOutbox, queueFinanceMutations, removeFromOutbox, saveFinanceData, setLastSeq } from '../utils/storage'
+import { applyChanges, createMutations } from '../utils/syncEntities'
 
 export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData }) {
   const [status, setStatus] = useState(auth ? 'idle' : 'local')
@@ -33,7 +34,7 @@ export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData 
         const result = await response.json()
         if (!result.ok) throw new Error(result.error || 'Ошибка синхронизации')
 
-        const remoteStates = result.changes.filter((change) => change.entity === 'appState' && change.action === 'upsert')
+        const remoteChanges = result.changes || []
         await removeFromOutbox(result.acceptedMutationIds || [])
         const remainingMutations = await getOutbox()
 
@@ -44,17 +45,17 @@ export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData 
           break
         }
 
-        const latestRemote = remoteStates.at(-1)
-        if (latestRemote?.payload) {
-          dataRef.current = latestRemote.payload
-          await saveFinanceData(latestRemote.payload)
-          remoteDataRef.current(latestRemote.payload)
+        if (remoteChanges.length) {
+          const mergedData = applyChanges(dataRef.current, remoteChanges)
+          dataRef.current = mergedData
+          await saveFinanceData(mergedData)
+          remoteDataRef.current(mergedData)
         }
         // Продвигаем курсор только после того, как удалённое состояние применено.
         await setLastSeq(result.lastSeq)
 
-        if (attempt === 0 && lastSeq === 0 && mutations.length === 0 && remoteStates.length === 0) {
-          await queueFinanceData(dataRef.current)
+        if (attempt === 0 && lastSeq === 0 && mutations.length === 0 && remoteChanges.length === 0) {
+          await queueFinanceMutations(dataRef.current, createMutations(dataRef.current, dataRef.current, true))
           continue
         }
         break

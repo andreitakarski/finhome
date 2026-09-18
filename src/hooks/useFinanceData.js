@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { calculateTotals } from '../utils/calculations'
-import { loadFinanceData, queueFinanceData, saveFinanceData } from '../utils/storage'
+import { loadFinanceData, queueFinanceMutations, saveFinanceData } from '../utils/storage'
+import { createMutations } from '../utils/syncEntities'
 import { fetchNBRBRates } from '../utils/currencyApi'
 import { INITIAL_DATA } from '../constants/finance'
 
@@ -10,6 +11,7 @@ export function useFinanceData() {
   const [syncRevision, setSyncRevision] = useState(0)
   const persistenceStarted = useRef(false)
   const applyingRemoteData = useRef(false)
+  const previousData = useRef(data)
   const totals = useMemo(() => calculateTotals(data.transactions), [data.transactions])
 
   useEffect(() => {
@@ -17,6 +19,7 @@ export function useFinanceData() {
     loadFinanceData().then((savedData) => {
       if (!active) return
       setData(savedData)
+      previousData.current = savedData
       setIsLoaded(true)
     })
     return () => { active = false }
@@ -31,9 +34,12 @@ export function useFinanceData() {
     }
     if (applyingRemoteData.current) {
       applyingRemoteData.current = false
+      previousData.current = data
       return
     }
-    queueFinanceData(data)
+    const mutations = createMutations(previousData.current, data)
+    previousData.current = data
+    queueFinanceMutations(data, mutations)
       .then(() => setSyncRevision((revision) => revision + 1))
       .catch((error) => console.warn('Не удалось добавить изменение в очередь:', error))
   }, [data, isLoaded])

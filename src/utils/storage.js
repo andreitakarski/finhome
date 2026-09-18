@@ -1,7 +1,7 @@
 import { INITIAL_DATA } from '../constants/finance'
 
 const DB_NAME = 'finhome'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const DATA_STORE = 'appData'
 const OUTBOX_STORE = 'outbox'
 const METADATA_STORE = 'metadata'
@@ -13,6 +13,7 @@ function openDatabase() {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
     request.onupgradeneeded = () => {
       const database = request.result
+      Array.from(database.objectStoreNames).forEach((name) => database.deleteObjectStore(name))
       if (!database.objectStoreNames.contains(DATA_STORE)) database.createObjectStore(DATA_STORE)
       if (!database.objectStoreNames.contains(OUTBOX_STORE)) database.createObjectStore(OUTBOX_STORE, { keyPath: 'mutationId' })
       if (!database.objectStoreNames.contains(METADATA_STORE)) database.createObjectStore(METADATA_STORE)
@@ -93,23 +94,16 @@ export async function saveFinanceData(data) {
   await writeToStore(DATA_STORE, DATA_KEY, data)
 }
 
-export async function queueFinanceData(data) {
+export async function queueFinanceMutations(data, mutations) {
+  if (!mutations.length) return []
   const deviceId = await getDeviceId()
-  const mutation = {
-    mutationId: crypto.randomUUID(),
-    entity: 'appState',
-    entityId: DATA_KEY,
-    action: 'upsert',
-    payload: data,
-    createdAt: new Date().toISOString(),
-    deviceId,
-  }
+  const prepared = mutations.map((mutation) => ({ ...mutation, deviceId }))
   const database = await openDatabase()
   return new Promise((resolve, reject) => {
     const transaction = database.transaction([DATA_STORE, OUTBOX_STORE], 'readwrite')
     transaction.objectStore(DATA_STORE).put(data, DATA_KEY)
-    transaction.objectStore(OUTBOX_STORE).put(mutation)
-    transaction.oncomplete = () => { database.close(); resolve(mutation) }
+    prepared.forEach((mutation) => transaction.objectStore(OUTBOX_STORE).put(mutation))
+    transaction.oncomplete = () => { database.close(); resolve(prepared) }
     transaction.onerror = () => reject(transaction.error)
   })
 }
