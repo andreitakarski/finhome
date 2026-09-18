@@ -10,12 +10,14 @@ import { DebtsPage } from './pages/DebtsPage'
 import { MortgagePage } from './pages/MortgagePage'
 import { SavingsPage } from './pages/SavingsPage'
 import { SettingsPage } from './pages/SettingsPage'
+import { restoreGoogleAuth } from './components/SyncCard'
 
 export default function App() {
   const { data, setData, totals, addTransaction, addMortgagePayment, addDebt, repayDebt } = useFinanceData()
   const [page, setPage] = useState('savings')
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState('')
+  const [googleAuth, setGoogleAuth] = useState(restoreGoogleAuth)
 
   useEffect(() => { if ('serviceWorker' in navigator) navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`) }, [])
   function notify(message) { setToast(message); window.setTimeout(() => setToast(''), 2200) }
@@ -26,12 +28,12 @@ export default function App() {
   function saveRepayment(amount) { repayDebt(modal.debt.id, amount); setModal(null); notify('Погашение учтено') }
 
   return <div className="app-shell">
-    <Header onHome={() => setPage('savings')} onSettings={() => setPage('settings')}/>
+    <Header onHome={() => setPage('savings')} onSettings={() => setPage('settings')} cloudConnected={Boolean(googleAuth)}/>
     <main>
       {page === 'savings' && <SavingsPage data={data} totals={totals} onMoneyAction={openMoneyModal}/>} 
       {page === 'mortgage' && <MortgagePage mortgage={data.mortgage} usdRate={data.rates.USD} onAddPayment={() => setModal({ type: 'payment' })}/>} 
       {page === 'debts' && <DebtsPage debts={data.debts} rates={data.rates} savingsTotals={totals} onRepay={(debt) => setModal({ type: 'repayment', debt })}/>} 
-      {page === 'settings' && <SettingsPage data={data} setData={setData} notify={notify}/>} 
+      {page === 'settings' && <SettingsPage data={data} setData={setData} notify={notify} googleAuth={googleAuth} onGoogleAuthChange={setGoogleAuth}/>}
     </main>
     <BottomNavigation page={page} onNavigate={setPage} onQuickAdd={() => page === 'debts' ? setModal({ type: 'debt' }) : openMoneyModal('in', 'cash')}/>
     {modal?.type === 'money' && <MoneyModal data={data} initial={modal} onClose={() => setModal(null)} onSave={saveTransaction}/>} 

@@ -87,6 +87,10 @@ button {
   margin-right: 6px;
 }
 
+.status.connected .status-dot {
+  background: #46a46d;
+}
+
 .icon-btn {
   border: 1px solid var(--line);
   border-radius: 11px;
@@ -625,6 +629,30 @@ button {
   padding: 7px 11px;
   font-size: 11px;
   font-weight: 700;
+}
+
+.status-pill.connected {
+  background: #e3f3e8;
+  color: #287247;
+}
+
+.google-signin {
+  min-height: 44px;
+  margin-top: 16px;
+}
+
+.sync-signout {
+  margin-left: 10px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  text-decoration: underline;
+}
+
+.sync-error {
+  color: #a33b32 !important;
+  margin-top: 10px !important;
 }
 
 .modal-backdrop {

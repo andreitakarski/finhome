@@ -3,8 +3,9 @@ import { CreditCard, X } from 'lucide-react'
 import { Field } from '../components/Field'
 import { CURRENCIES } from '../constants/finance'
 import { formatDate, formatMoney } from '../utils/formatters'
+import { SyncCard } from '../components/SyncCard'
 
-export function SettingsPage({ data, setData, notify }) {
+export function SettingsPage({ data, setData, notify, googleAuth, onGoogleAuthChange }) {
   const [card, setCard] = useState({ bank: '', currency: 'BYN' })
 
   function addCard(event) {
@@ -50,6 +51,6 @@ export function SettingsPage({ data, setData, notify }) {
       </form>
     </div>
 
-    <div className="settings-card sync-card"><h3>Синхронизация</h3><p>Сейчас данные сохраняются на этом устройстве и доступны офлайн. Облачная синхронизация Supabase подключается через переменные окружения.</p><span className="status-pill">Локальный режим</span></div>
+    <SyncCard auth={googleAuth} onAuthChange={onGoogleAuthChange}/>
   </section>
 }
