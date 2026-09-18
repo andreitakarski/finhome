@@ -35,6 +35,55 @@ button {
   padding-bottom: 100px;
 }
 
+.auth-gate {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: radial-gradient(circle at 50% 10%,#2c5d49 0,#173a2e 38%,#10271f 100%);
+}
+
+.auth-card {
+  width: min(430px,100%);
+  padding: 38px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 24px 80px #07130e66;
+  text-align: center;
+}
+
+.auth-icon {
+  width: 58px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 22px;
+  border-radius: 18px;
+  background: #e6efe9;
+  color: var(--green);
+}
+
+.auth-card .eyebrow {
+  margin-bottom: 8px;
+}
+
+.auth-card h1 {
+  margin: 0 0 12px;
+  font-size: 28px;
+}
+
+.auth-card>p:not(.eyebrow) {
+  margin: 0 auto 20px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.auth-card .google-signin {
+  display: flex;
+  justify-content: center;
+}
+
 .topbar {
   height: 72px;
   background: #fff;

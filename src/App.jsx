@@ -11,6 +11,8 @@ import { MortgagePage } from './pages/MortgagePage'
 import { SavingsPage } from './pages/SavingsPage'
 import { SettingsPage } from './pages/SettingsPage'
 import { restoreGoogleAuth } from './components/SyncCard'
+import { AuthGate } from './components/AuthGate'
+import { GOOGLE_TOKEN_KEY } from './constants/sync'
 
 export default function App() {
   const { data, setData, totals, addTransaction, addMortgagePayment, addDebt, repayDebt } = useFinanceData()
@@ -20,12 +22,22 @@ export default function App() {
   const [googleAuth, setGoogleAuth] = useState(restoreGoogleAuth)
 
   useEffect(() => { if ('serviceWorker' in navigator) navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`) }, [])
+  useEffect(() => {
+    if (!googleAuth?.expiresAt) return undefined
+    const timeout = window.setTimeout(() => {
+      sessionStorage.removeItem(GOOGLE_TOKEN_KEY)
+      setGoogleAuth(null)
+    }, Math.max(0, googleAuth.expiresAt - Date.now()))
+    return () => window.clearTimeout(timeout)
+  }, [googleAuth?.expiresAt])
   function notify(message) { setToast(message); window.setTimeout(() => setToast(''), 2200) }
   function openMoneyModal(direction, source) { setModal({ type: 'money', direction, source }) }
   function saveTransaction(transaction) { addTransaction(transaction); setModal(null); notify(transaction.direction === 'in' ? 'Средства добавлены' : 'Списание сохранено') }
   function savePayment(payment) { addMortgagePayment(payment); setModal(null); notify('Платёж учтён') }
   function saveDebt(debt) { addDebt(debt); setModal(null); notify('Долг добавлен') }
   function saveRepayment(amount) { repayDebt(modal.debt.id, amount); setModal(null); notify('Погашение учтено') }
+
+  if (!googleAuth) return <AuthGate onAuthChange={setGoogleAuth}/>
 
   return <div className="app-shell">
     <Header onHome={() => setPage('savings')} onSettings={() => setPage('settings')} cloudConnected={Boolean(googleAuth)}/>

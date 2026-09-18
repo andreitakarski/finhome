@@ -11,12 +11,12 @@ function tokenIdentity(token) {
   }
 }
 
-export function SyncCard({ auth, onAuthChange }) {
+export function GoogleSignInButton({ onAuthChange }) {
   const buttonRef = useRef(null)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (auth?.token || !buttonRef.current) return
+    if (!buttonRef.current) return
     let timer
     let attempts = 0
 
@@ -33,7 +33,7 @@ export function SyncCard({ auth, onAuthChange }) {
           const identity = tokenIdentity(credential)
           if (!identity) return setError('Google вернул недействительный токен')
           sessionStorage.setItem(GOOGLE_TOKEN_KEY, credential)
-          onAuthChange({ token: credential, email: identity.email, name: identity.name })
+          onAuthChange({ token: credential, email: identity.email, name: identity.name, expiresAt: identity.exp * 1000 })
           setError('')
         },
       })
@@ -43,7 +43,15 @@ export function SyncCard({ auth, onAuthChange }) {
 
     renderGoogleButton()
     return () => window.clearTimeout(timer)
-  }, [auth?.token, onAuthChange])
+  }, [onAuthChange])
+
+  return <>
+    <div className="google-signin" ref={buttonRef}/>
+    {error && <p className="sync-error">{error}</p>}
+  </>
+}
+
+export function SyncCard({ auth, onAuthChange }) {
 
   function signOut() {
     window.google?.accounts?.id?.disableAutoSelect()
@@ -57,11 +65,7 @@ export function SyncCard({ auth, onAuthChange }) {
       <p>Выполнен вход как <b>{auth.email}</b>. Аккаунт готов к защищённой синхронизации.</p>
       <span className="status-pill connected">Google подключён</span>
       <button type="button" className="sync-signout" onClick={signOut}>Выйти</button>
-    </> : <>
-      <p>Войдите через разрешённый Google-аккаунт, чтобы подключить облачное хранение.</p>
-      <div className="google-signin" ref={buttonRef}/>
-      {error && <p className="sync-error">{error}</p>}
-    </>}
+    </> : <GoogleSignInButton onAuthChange={onAuthChange}/>}
   </div>
 }
 
@@ -72,6 +76,5 @@ export function restoreGoogleAuth() {
     sessionStorage.removeItem(GOOGLE_TOKEN_KEY)
     return null
   }
-  return { token, email: identity.email, name: identity.name }
+  return { token, email: identity.email, name: identity.name, expiresAt: identity.exp * 1000 }
 }
-
