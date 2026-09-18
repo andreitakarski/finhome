@@ -1,0 +1,1417 @@
+:root {
+  --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", Arial, sans-serif;
+  font-family: var(--font-system);
+  color: #18251f;
+  background: #f5f6f1;
+  font-synthesis: none;
+  --green: #173a2e;
+  --green2: #22503f;
+  --gold: #d4ad54;
+  --cream: #f5f6f1;
+  --line: #dfe3da;
+  --muted: #718078;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--cream);
+}
+
+button,input,select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+.topbar {
+  height: 72px;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  padding: 0 max(24px,calc((100vw - 1100px)/2));
+  border-bottom: 1px solid #e8eae5;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 0;
+  background: none;
+  color: #17372c;
+  font-weight: 700;
+  font-size: 17px;
+}
+
+.brand-mark {
+  width: 37px;
+  height: 37px;
+  border-radius: 12px;
+  background: var(--green);
+  color: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.status {
+  margin-left: auto;
+  margin-right: 16px;
+  font-size: 12px;
+  color: #738078;
+  background: #f2f5f1;
+  padding: 8px 12px;
+  border-radius: 20px;
+}
+
+.status-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #d49f3f;
+  margin-right: 6px;
+}
+
+.icon-btn {
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: #fff;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  color: #42524a;
+}
+
+.hero {
+  background: linear-gradient(130deg,#122e24,#204b3b);
+  color: #fff;
+  padding: 54px max(24px,calc((100vw - 1100px)/2)) 40px;
+  min-height: 276px;
+  display: grid;
+  grid-template-columns: 1fr 1.25fr;
+  align-items: end;
+  gap: 80px;
+}
+
+.eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .18em;
+  color: #c5d5cb;
+  margin: 0 0 12px;
+}
+
+.eyebrow.dark {
+  color: #79877f;
+}
+
+.hero h1,.page-title {
+  font-family: var(--font-system);
+  font-size: 44px;
+  margin: 0 0 6px;
+  letter-spacing: -.02em;
+}
+
+.muted {
+  color: var(--muted);
+  margin: 0;
+}
+
+.muted.light {
+  color: #9db1a5;
+}
+
+.currency-row {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 12px;
+}
+
+.currency-total {
+  border: 1px solid #466457;
+  background: #25483b99;
+  border-radius: 16px;
+  padding: 17px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.currency-total.featured {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: #203127;
+}
+
+.currency-total span {
+  font-size: 11px;
+  opacity: .75;
+}
+
+.currency-total strong {
+  font-size: 18px;
+}
+
+.content-section,.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 42px 24px 0;
+}
+
+.section-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+
+.section-heading h2,.modal-head h2 {
+  font-family: var(--font-system);
+  margin: 0;
+  font-size: 27px;
+}
+
+.text-btn {
+  border: 0;
+  background: none;
+  color: #365c4b;
+  display: flex;
+  align-items: center;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.account-card,.history-card,.settings-card,.mortgage-card,.stats-grid>div {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  box-shadow: 0 5px 20px #1e382808;
+}
+
+.account-card {
+  padding: 24px;
+}
+
+.account-top {
+  display: flex;
+  gap: 13px;
+  align-items: center;
+}
+
+.account-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 15px;
+  background: #e8efe9;
+  color: var(--green);
+  display: grid;
+  place-items: center;
+}
+
+.account-icon.gold {
+  background: #ead8a7;
+}
+
+.account-top h3,.settings-card h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.account-top p,.settings-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.balance-list {
+  margin: 25px 0 20px;
+  border-top: 1px solid #edf0eb;
+}
+
+.balance-row {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 0;
+  border-bottom: 1px solid #edf0eb;
+}
+
+.balance-list button.balance-row {
+  border-top: 0;
+  border-right: 0;
+  border-left: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.balance-list button.balance-row:hover {
+  color: var(--green);
+}
+
+.balance-list span {
+  font-size: 12px;
+  color: #77857d;
+}
+
+.balance-list strong {
+  font-size: 15px;
+}
+
+.card-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.card-actions button,.inline-form button {
+  height: 42px;
+  border: 1px solid #d9ded8;
+  border-radius: 11px;
+  background: #fff;
+  color: #3f5148;
+  font-weight: 600;
+}
+
+.card-actions .primary-action,.wide-primary {
+  background: var(--green);
+  color: #fff;
+  border-color: var(--green);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+}
+
+.history-section {
+  padding-bottom: 45px;
+}
+
+.history-card {
+  overflow: hidden;
+  min-height: 120px;
+}
+
+.transaction {
+  display: flex;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #edf0eb;
+  gap: 13px;
+}
+
+.transaction:last-child {
+  border: 0;
+}
+
+.transaction-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+}
+
+.transaction-icon svg {
+  width: 18px;
+}
+
+.transaction-icon.in {
+  background: #e3f2e8;
+  color: #2d7550;
+}
+
+.transaction-icon.out {
+  background: #f5e8e3;
+  color: #a65638;
+}
+
+.transaction-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.transaction-info b {
+  font-size: 13px;
+}
+
+.transaction-info span {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.transaction>strong {
+  font-size: 13px;
+}
+
+.transaction>strong.in {
+  color: #28704b;
+}
+
+.transaction>strong.out {
+  color: #9e4d34;
+}
+
+.empty {
+  min-height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  color: #92a097;
+  gap: 6px;
+}
+
+.empty b {
+  color: #3f5047;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.empty span {
+  font-size: 12px;
+}
+
+.bottom-nav {
+  position: fixed;
+  bottom: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 68px;
+  background: #fff;
+  border: 1px solid #dfe3dd;
+  border-radius: 22px;
+  box-shadow: 0 10px 40px #16302626;
+  display: flex;
+  align-items: center;
+  padding: 5px 10px;
+  z-index: 20;
+}
+
+.nav-item {
+  border: 0;
+  background: none;
+  color: #89938e;
+  width: 100px;
+  height: 54px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  font-size: 10px;
+}
+
+.nav-item.active {
+  color: var(--green);
+}
+
+.quick-add {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  border: 0;
+  background: var(--gold);
+  color: #18352a;
+  display: grid;
+  place-items: center;
+  margin: 0 5px;
+}
+
+.narrow-page {
+  max-width: 820px;
+  padding-top: 55px;
+}
+
+.page-title {
+  font-size: 38px;
+  margin-bottom: 26px;
+}
+
+.mortgage-card {
+  padding: 30px;
+  background: linear-gradient(145deg,#fff,#fbfcf7);
+}
+
+.mortgage-title {
+  display: flex;
+  gap: 17px;
+  align-items: center;
+}
+
+.mortgage-title>div>span,.stats-grid span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.mortgage-title h2 {
+  font-family: var(--font-system);
+  font-size: 35px;
+  margin: 3px 0;
+}
+
+.mortgage-title p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.progress {
+  height: 8px;
+  background: #e7eae5;
+  border-radius: 8px;
+  margin: 30px 0 8px;
+  overflow: hidden;
+}
+
+.progress span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+  border-radius: 8px;
+}
+
+.progress-caption {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 25px;
+}
+
+.progress-caption b {
+  color: #36463e;
+}
+
+.wide-primary {
+  width: 100%;
+  height: 48px;
+  border: 0;
+  border-radius: 12px;
+  font-weight: 600;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.stats-grid>div {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stats-grid b {
+  font-size: 18px;
+}
+
+.mortgage-history {
+  margin-top: 38px;
+}
+
+.settings-card {
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.settings-card>p {
+  margin-bottom: 18px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 15px;
+}
+
+.field>span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #607067;
+}
+
+.field input,.field select,.inline-form input {
+  height: 46px;
+  border: 1px solid #d6ddd7;
+  border-radius: 11px;
+  padding: 0 13px;
+  background: #fbfcfa;
+  outline: none;
+}
+
+.field input:focus,.field select:focus,.inline-form input:focus {
+  border-color: #6c8a7b;
+  box-shadow: 0 0 0 3px #dce8e1;
+}
+
+.tag-list {
+  display: flex;
+  gap: 7px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+
+.tag-list>span {
+  padding: 8px 10px;
+  background: #edf1ed;
+  border-radius: 10px;
+  font-size: 12px;
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+
+.tag-list button {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: #849188;
+  display: grid;
+}
+
+.inline-form {
+  display: flex;
+  gap: 8px;
+}
+
+.inline-form input {
+  flex: 1;
+}
+
+.inline-form button {
+  padding: 0 17px;
+}
+
+.status-pill {
+  display: inline-block;
+  background: #fff1d3;
+  color: #8b6417;
+  border-radius: 20px;
+  padding: 7px 11px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #10241db3;
+  backdrop-filter: blur(5px);
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+}
+
+.modal {
+  width: min(500px,100%);
+  max-height: 90vh;
+  overflow: auto;
+  background: #fff;
+  border-radius: 24px;
+  padding: 26px;
+  box-shadow: 0 20px 70px #07130e66;
+}
+
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #edf0ec;
+  padding: 4px;
+  border-radius: 12px;
+  margin-bottom: 18px;
+}
+
+.segmented button {
+  height: 41px;
+  border: 0;
+  border-radius: 9px;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  color: #6e7b74;
+}
+
+.segmented button.active {
+  background: #fff;
+  color: #1e4637;
+  box-shadow: 0 2px 8px #19322512;
+}
+
+.modal-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #f3f5f0;
+  border-radius: 13px;
+  padding: 15px;
+  margin: 5px 0 16px;
+}
+
+.modal-total span {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.modal-total strong {
+  font-size: 20px;
+}
+
+.form-hint {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: -5px 0 17px;
+}
+
+.toast {
+  position: fixed;
+  top: 87px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1d3e32;
+  color: #fff;
+  padding: 12px 18px;
+  border-radius: 12px;
+  box-shadow: 0 7px 25px #0003;
+  z-index: 200;
+  font-size: 13px;
+}
+
+@media(max-width:720px) {
+  .topbar {
+    height: 62px;
+    padding: 0 17px;
+  }
+
+  .brand span:last-child {
+    font-size: 15px;
+  }
+
+  .status {
+    font-size: 0;
+    padding: 8px;
+  }
+
+  .status-dot {
+    margin: 0;
+  }
+
+  .desktop-settings {
+    display: none;
+  }
+
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 35px 20px 24px;
+    gap: 28px;
+    min-height: 0;
+  }
+
+  .hero h1 {
+    font-size: 30px;
+  }
+
+  .currency-row {
+    gap: 7px;
+  }
+
+  .currency-total {
+    padding: 13px 10px;
+    border-radius: 13px;
+  }
+
+  .currency-total strong {
+    font-size: 14px;
+  }
+
+  .currency-total span {
+    font-size: 9px;
+  }
+
+  .content-section,.page {
+    padding-left: 17px;
+    padding-right: 17px;
+    padding-top: 30px;
+  }
+
+  .account-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .account-card {
+    padding: 20px;
+  }
+
+  .section-heading h2 {
+    font-size: 23px;
+  }
+
+  .history-section {
+    padding-bottom: 30px;
+  }
+
+  .text-btn {
+    font-size: 0;
+  }
+
+  .bottom-nav {
+    bottom: max(10px,env(safe-area-inset-bottom));
+    width: calc(100% - 24px);
+    justify-content: space-around;
+  }
+
+  .nav-item {
+    width: 75px;
+  }
+
+  .quick-add {
+    position: absolute;
+    right: 12px;
+    top: -60px;
+    box-shadow: 0 8px 24px #9e7d3155;
+  }
+
+  .narrow-page {
+    padding-top: 34px;
+  }
+
+  .page-title {
+    font-size: 31px;
+  }
+
+  .mortgage-card {
+    padding: 22px;
+  }
+
+  .mortgage-title h2 {
+    font-size: 30px;
+  }
+
+  .stats-grid {
+    gap: 9px;
+  }
+
+  .stats-grid>div {
+    padding: 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .transaction {
+    padding: 14px;
+  }
+
+  .transaction-info b {
+    max-width: 160px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .modal-backdrop {
+    align-items: end;
+    padding: 0;
+  }
+
+  .modal {
+    width: 100%;
+    border-radius: 24px 24px 0 0;
+    padding: 22px 19px max(24px,env(safe-area-inset-bottom));
+    max-height: 92vh;
+  }
+
+  .toast {
+    top: 72px;
+    width: max-content;
+    max-width: 90%;
+  }
+
+}
+
+.card-breakdown {
+  margin: -7px 0 18px;
+  border-bottom: 1px solid #edf0eb;
+}
+
+.card-breakdown>div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-top: 1px dashed #e5e9e4;
+}
+
+.card-breakdown span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.card-breakdown b {
+  font-size: 12px;
+}
+
+.card-breakdown small {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.card-breakdown strong {
+  font-size: 12px;
+}
+
+.denomination-popup>div:not(.empty-inline) {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 2px;
+  border-bottom: 1px solid #edf0eb;
+}
+
+.denomination-popup>div:not(.empty-inline):last-child {
+  border-bottom: 0;
+}
+
+.denomination-popup span {
+  color: #59675f;
+}
+
+.denomination-popup strong {
+  color: var(--green);
+}
+
+.rates-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin: 18px 0 10px;
+}
+
+.rates-list>div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  background: #f3f5f1;
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.rates-list span,.rate-date {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.rates-list b {
+  font-size: 16px;
+}
+
+.saved-cards {
+  display: grid;
+  gap: 8px;
+  margin: 18px 0;
+}
+
+.saved-card {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid #e1e6df;
+  border-radius: 13px;
+  padding: 11px;
+}
+
+.mini-card-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: #e6eee8;
+  display: grid;
+  place-items: center;
+  color: var(--green);
+}
+
+.saved-card>div {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.saved-card b {
+  font-size: 12px;
+}
+
+.saved-card span {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.saved-card>button {
+  border: 0;
+  background: none;
+  color: #8b9790;
+  display: grid;
+}
+
+.card-form {
+  border-top: 1px solid #e7ebe5;
+  padding-top: 18px;
+}
+
+.empty-inline {
+  background: #fff3dc;
+  color: #815f20;
+  padding: 14px;
+  border-radius: 11px;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.account-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #eef3ed;
+  border-radius: 13px;
+  padding: 13px 14px;
+  margin: -5px 0 18px;
+}
+
+.account-summary>span {
+  font-size: 11px;
+  font-weight: 600;
+  color: #637169;
+}
+
+.account-summary>div {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.account-summary strong {
+  font-family: var(--font-system);
+  font-size: 18px;
+  color: var(--green);
+}
+
+.account-summary small {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.hero-equivalents {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  color: #9db1a5;
+  font-size: 13px;
+}
+
+.hero-equivalents span+span {
+  border-left: 1px solid #ffffff2b;
+  padding-left: 14px;
+}
+
+.debts-page {
+  max-width: 1100px;
+  padding-bottom: 40px;
+}
+
+.debts-title {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.debts-title .page-title {
+  margin-bottom: 0;
+}
+
+.add-debt-button {
+  height: 44px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-weight: 600;
+}
+
+.debt-totals {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 28px 0 20px;
+}
+
+.debt-totals>div {
+  border-radius: 18px;
+  padding: 20px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.debt-totals .owe {
+  background: #f6e8e3;
+  color: #713f30;
+}
+
+.debt-totals .owed {
+  background: #e2efe7;
+  color: #285a40;
+}
+
+.debt-totals span {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.debt-totals strong {
+  font-family: var(--font-system);
+  font-size: 25px;
+}
+
+.debt-totals small {
+  font-size: 10px;
+  opacity: .7;
+}
+
+.debt-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.debt-column {
+  min-width: 0;
+}
+
+.debt-column-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  margin: 12px 0;
+}
+
+.debt-column-head h2 {
+  font-family: var(--font-system);
+  font-size: 22px;
+  margin: 0;
+}
+
+.debt-column-head p {
+  font-size: 10px;
+  color: var(--muted);
+  margin: 2px 0 0;
+}
+
+.debt-type-icon {
+  width: 41px;
+  height: 41px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+}
+
+.debt-type-icon svg {
+  width: 19px;
+}
+
+.debt-type-icon.i_owe {
+  background: #f5e6e1;
+  color: #a45238;
+}
+
+.debt-type-icon.owed_to_me {
+  background: #e1efe6;
+  color: #27704a;
+}
+
+.debt-list {
+  display: grid;
+  gap: 10px;
+}
+
+.debt-card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 17px;
+  box-shadow: 0 4px 14px #1e382806;
+}
+
+.debt-card.settled {
+  opacity: .65;
+}
+
+.debt-card-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.debt-card-top h3 {
+  font-size: 14px;
+  margin: 0 0 4px;
+}
+
+.debt-card-top span {
+  display: block;
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.debt-card-top>strong {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.debt-progress {
+  height: 5px;
+  background: #edf0ec;
+  border-radius: 5px;
+  overflow: hidden;
+  margin: 15px 0 8px;
+}
+
+.debt-progress span {
+  display: block;
+  height: 100%;
+  background: var(--gold);
+}
+
+.debt-card-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.debt-card-bottom small {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.debt-card-bottom button {
+  border: 0;
+  background: #e9f0eb;
+  color: #285a42;
+  border-radius: 8px;
+  padding: 7px 11px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.debt-empty {
+  height: 130px;
+  background: #ffffff99;
+  border: 1px dashed #d8ded8;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #8b9890;
+  font-size: 11px;
+}
+
+.repayment-history {
+  border-top: 1px solid #edf0eb;
+  margin-top: 13px;
+  padding-top: 10px;
+}
+
+.repayment-history summary {
+  font-size: 10px;
+  color: #65756c;
+  cursor: pointer;
+}
+
+.repayment-history div {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 8px;
+  font-size: 10px;
+}
+
+.repayment-person {
+  display: flex;
+  flex-direction: column;
+  background: #f1f4ef;
+  border-radius: 13px;
+  padding: 15px;
+  margin-bottom: 17px;
+}
+
+.repayment-person span,.repayment-person small {
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.repayment-person strong {
+  font-size: 17px;
+  margin: 3px 0;
+}
+
+.debt-direction {
+  margin-bottom: 20px;
+}
+
+.net-capital {
+  background: linear-gradient(130deg,#15362b,#24503f);
+  color: #fff;
+  border-radius: 16px;
+  padding: 15px 18px;
+  margin: 0 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.net-capital>div:first-child {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.net-capital>div:first-child>span {
+  font-size: 8px;
+  letter-spacing: .14em;
+  color: #b6c9be;
+}
+
+.net-capital strong {
+  font-family: var(--font-system);
+  font-size: 23px;
+}
+
+.net-capital small {
+  font-size: 8px;
+  color: #91a89b;
+}
+
+.net-capital-values {
+  display: flex;
+  gap: 7px;
+}
+
+.net-capital-values span {
+  border: 1px solid #ffffff26;
+  background: #ffffff0d;
+  border-radius: 9px;
+  padding: 7px 10px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+@media(max-width:720px) {
+  .debts-title {
+    align-items: center;
+  }
+
+  .debt-totals {
+    gap: 8px;
+    margin-top: 22px;
+  }
+
+  .debt-totals>div {
+    padding: 16px 13px;
+  }
+
+  .debt-totals strong {
+    font-size: 20px;
+  }
+
+  .debt-totals small {
+    line-height: 1.5;
+  }
+
+  .net-capital {
+    gap: 12px;
+    padding: 14px 15px;
+  }
+
+  .net-capital-values span {
+    padding: 7px 8px;
+  }
+
+  .debt-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .debt-column+.debt-column {
+    margin-top: 15px;
+  }
+
+  .bottom-nav .nav-item {
+    width: 64px;
+  }
+
+  .debt-card-top span {
+    max-width: 180px;
+  }
+
+}
+
+/* Calm, consistent typography for prominent values and headings. */
+.hero h1,.page-title,.section-heading h2,.modal-head h2,.mortgage-title h2,.account-summary strong,.debt-totals strong,.debt-column-head h2,.net-capital strong {
+  font-family: var(--font-system);
+  font-weight: 600;
+  letter-spacing: -.035em;
+}
