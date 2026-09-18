@@ -45,6 +45,17 @@ async function writeToStore(storeName, key, value) {
   })
 }
 
+async function getAllFromStore(storeName) {
+  const database = await openDatabase()
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(storeName, 'readonly')
+    const request = transaction.objectStore(storeName).getAll()
+    request.onsuccess = () => resolve(request.result)
+    request.onerror = () => reject(request.error)
+    transaction.oncomplete = () => database.close()
+  })
+}
+
 function normalizeData(saved) {
   if (!saved) return structuredClone(INITIAL_DATA)
 
@@ -80,4 +91,57 @@ export async function loadFinanceData() {
 
 export async function saveFinanceData(data) {
   await writeToStore(DATA_STORE, DATA_KEY, data)
+}
+
+export async function queueFinanceData(data) {
+  const deviceId = await getDeviceId()
+  const mutation = {
+    mutationId: crypto.randomUUID(),
+    entity: 'appState',
+    entityId: DATA_KEY,
+    action: 'upsert',
+    payload: data,
+    createdAt: new Date().toISOString(),
+    deviceId,
+  }
+  const database = await openDatabase()
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction([DATA_STORE, OUTBOX_STORE], 'readwrite')
+    transaction.objectStore(DATA_STORE).put(data, DATA_KEY)
+    transaction.objectStore(OUTBOX_STORE).put(mutation)
+    transaction.oncomplete = () => { database.close(); resolve(mutation) }
+    transaction.onerror = () => reject(transaction.error)
+  })
+}
+
+export async function getOutbox() {
+  return getAllFromStore(OUTBOX_STORE)
+}
+
+export async function removeFromOutbox(mutationIds) {
+  if (!mutationIds.length) return
+  const database = await openDatabase()
+  return new Promise((resolve, reject) => {
+    const transaction = database.transaction(OUTBOX_STORE, 'readwrite')
+    mutationIds.forEach((id) => transaction.objectStore(OUTBOX_STORE).delete(id))
+    transaction.oncomplete = () => { database.close(); resolve() }
+    transaction.onerror = () => reject(transaction.error)
+  })
+}
+
+export async function getDeviceId() {
+  let deviceId = await readFromStore(METADATA_STORE, 'deviceId')
+  if (!deviceId) {
+    deviceId = crypto.randomUUID()
+    await writeToStore(METADATA_STORE, 'deviceId', deviceId)
+  }
+  return deviceId
+}
+
+export async function getLastSeq() {
+  return Number(await readFromStore(METADATA_STORE, 'lastSeq')) || 0
+}
+
+export async function setLastSeq(lastSeq) {
+  await writeToStore(METADATA_STORE, 'lastSeq', Number(lastSeq) || 0)
 }

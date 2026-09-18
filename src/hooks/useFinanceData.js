@@ -1,12 +1,15 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { calculateTotals } from '../utils/calculations'
-import { loadFinanceData, saveFinanceData } from '../utils/storage'
+import { loadFinanceData, queueFinanceData, saveFinanceData } from '../utils/storage'
 import { fetchNBRBRates } from '../utils/currencyApi'
 import { INITIAL_DATA } from '../constants/finance'
 
 export function useFinanceData() {
   const [data, setData] = useState(() => structuredClone(INITIAL_DATA))
   const [isLoaded, setIsLoaded] = useState(false)
+  const [syncRevision, setSyncRevision] = useState(0)
+  const persistenceStarted = useRef(false)
+  const applyingRemoteData = useRef(false)
   const totals = useMemo(() => calculateTotals(data.transactions), [data.transactions])
 
   useEffect(() => {
@@ -21,7 +24,18 @@ export function useFinanceData() {
 
   useEffect(() => {
     if (!isLoaded) return
-    saveFinanceData(data).catch((error) => console.warn('Не удалось сохранить данные в IndexedDB:', error))
+    if (!persistenceStarted.current) {
+      persistenceStarted.current = true
+      saveFinanceData(data).catch((error) => console.warn('Не удалось сохранить данные в IndexedDB:', error))
+      return
+    }
+    if (applyingRemoteData.current) {
+      applyingRemoteData.current = false
+      return
+    }
+    queueFinanceData(data)
+      .then(() => setSyncRevision((revision) => revision + 1))
+      .catch((error) => console.warn('Не удалось добавить изменение в очередь:', error))
   }, [data, isLoaded])
 
   useEffect(() => {
@@ -82,5 +96,10 @@ export function useFinanceData() {
     }))
   }
 
-  return { data, setData, totals, addTransaction, addMortgagePayment, addDebt, repayDebt }
+  function applyRemoteData(remoteData) {
+    applyingRemoteData.current = true
+    setData(remoteData)
+  }
+
+  return { data, setData, totals, isLoaded, syncRevision, applyRemoteData, addTransaction, addMortgagePayment, addDebt, repayDebt }
 }

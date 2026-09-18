@@ -136,9 +136,12 @@ button {
   margin-right: 6px;
 }
 
-.status.connected .status-dot {
+.status.synced .status-dot,.status.idle .status-dot {
   background: #46a46d;
 }
+
+.status.syncing .status-dot { background: #3d78bd; }
+.status.offline .status-dot,.status.error .status-dot { background: #bd5148; }
 
 .icon-btn {
   border: 1px solid var(--line);

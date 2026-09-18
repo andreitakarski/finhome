@@ -13,13 +13,15 @@ import { SettingsPage } from './pages/SettingsPage'
 import { restoreGoogleAuth } from './components/SyncCard'
 import { AuthGate } from './components/AuthGate'
 import { GOOGLE_TOKEN_KEY } from './constants/sync'
+import { useCloudSync } from './hooks/useCloudSync'
 
 export default function App() {
-  const { data, setData, totals, addTransaction, addMortgagePayment, addDebt, repayDebt } = useFinanceData()
+  const [googleAuth, setGoogleAuth] = useState(restoreGoogleAuth)
+  const { data, setData, totals, isLoaded, syncRevision, applyRemoteData, addTransaction, addMortgagePayment, addDebt, repayDebt } = useFinanceData()
+  const { status: syncStatus } = useCloudSync({ auth: googleAuth, data, isLoaded, changeSignal: syncRevision, onRemoteData: applyRemoteData })
   const [page, setPage] = useState('savings')
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState('')
-  const [googleAuth, setGoogleAuth] = useState(restoreGoogleAuth)
 
   useEffect(() => { if ('serviceWorker' in navigator) navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`) }, [])
   useEffect(() => {
@@ -40,7 +42,7 @@ export default function App() {
   if (!googleAuth) return <AuthGate onAuthChange={setGoogleAuth}/>
 
   return <div className="app-shell">
-    <Header onHome={() => setPage('savings')} onSettings={() => setPage('settings')} cloudConnected={Boolean(googleAuth)}/>
+    <Header onHome={() => setPage('savings')} onSettings={() => setPage('settings')} syncStatus={syncStatus}/>
     <main>
       {page === 'savings' && <SavingsPage data={data} totals={totals} onMoneyAction={openMoneyModal}/>} 
       {page === 'mortgage' && <MortgagePage mortgage={data.mortgage} usdRate={data.rates.USD} onAddPayment={() => setModal({ type: 'payment' })}/>} 
