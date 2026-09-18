@@ -23,7 +23,6 @@ export default function App() {
   const [modal, setModal] = useState(null)
   const [toast, setToast] = useState('')
 
-  useEffect(() => { if ('serviceWorker' in navigator) navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`) }, [])
   useEffect(() => {
     if (!googleAuth?.expiresAt) return undefined
     const timeout = window.setTimeout(() => {

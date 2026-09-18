@@ -11,7 +11,8 @@ const SCHEMAS = {
 const LOG_FIELDS = ['seq','mutationId','entity','entityId','action','createdAt','deviceId']
 
 function doGet() {
-  ensureSheets_()
+  const spreadsheet = spreadsheet_()
+  ensureSheets_(spreadsheet)
   return json_({ ok: true, service: 'finhome-sync-v2', timestamp: new Date().toISOString() })
 }
 
@@ -45,30 +46,33 @@ function sync_(request) {
   const lock = LockService.getScriptLock()
   lock.waitLock(10000)
   try {
-    ensureSheets_()
-    const log = spreadsheet_().getSheetByName(CHANGE_LOG)
-    const known = existingMutationIds_(log)
+    const spreadsheet = spreadsheet_()
+    ensureSheets_(spreadsheet)
+    const log = spreadsheet.getSheetByName(CHANGE_LOG)
+    const known = mutations.length ? existingMutationIds_(log) : new Set()
     const accepted = []
     let seq = lastSequence_(log)
+    const logRows = []
     mutations.forEach((mutation) => {
       validateMutation_(mutation)
       if (!known.has(mutation.mutationId)) {
-        upsertEntity_(mutation)
+        upsertEntity_(spreadsheet, mutation)
         seq += 1
-        log.appendRow([seq, mutation.mutationId, mutation.entity, mutation.entityId, mutation.action, mutation.createdAt, deviceId])
+        logRows.push([seq, mutation.mutationId, mutation.entity, mutation.entityId, mutation.action, mutation.createdAt, deviceId])
         known.add(mutation.mutationId)
       }
       accepted.push(mutation.mutationId)
     })
-    return { ok: true, lastSeq: lastSequence_(log), acceptedMutationIds: accepted, changes: changesAfter_(log, lastSeq) }
+    if (logRows.length) log.getRange(log.getLastRow() + 1, 1, logRows.length, LOG_FIELDS.length).setValues(logRows)
+    return { ok: true, lastSeq: seq, acceptedMutationIds: accepted, changes: changesAfter_(log, lastSeq) }
   } finally {
     lock.releaseLock()
   }
 }
 
-function upsertEntity_(mutation) {
+function upsertEntity_(spreadsheet, mutation) {
   const schema = SCHEMAS[mutation.entity]
-  const sheet = spreadsheet_().getSheetByName(schema.sheet)
+  const sheet = spreadsheet.getSheetByName(schema.sheet)
   const values = sheet.getDataRange().getValues()
   const index = values.slice(1).findIndex((row) => String(row[0]) === mutation.entityId)
   const current = index >= 0 ? rowToObject_(schema.fields, values[index + 1]) : {}
@@ -82,9 +86,10 @@ function upsertEntity_(mutation) {
 }
 
 function changesAfter_(log, lastSeq) {
-  if (log.getLastRow() < 2) return []
-  return log.getRange(2, 1, log.getLastRow() - 1, LOG_FIELDS.length).getValues()
-    .filter((row) => Number(row[0]) > lastSeq)
+  const lastRow = log.getLastRow()
+  const firstRow = Math.max(2, lastSeq + 2)
+  if (firstRow > lastRow) return []
+  return log.getRange(firstRow, 1, lastRow - firstRow + 1, LOG_FIELDS.length).getValues()
     .map((row) => {
       const entity = String(row[2])
       const entityId = String(row[3])
@@ -104,8 +109,8 @@ function rowToObject_(fields, row) {
   return fields.reduce((result, field, index) => { result[field] = row[index] instanceof Date ? row[index].toISOString() : row[index]; return result }, {})
 }
 
-function ensureSheets_() {
-  const spreadsheet = spreadsheet_()
+function ensureSheets_(spreadsheet) {
+  spreadsheet = spreadsheet || spreadsheet_()
   ensureSheet_(spreadsheet, CHANGE_LOG, LOG_FIELDS)
   Object.values(SCHEMAS).forEach((schema) => ensureSheet_(spreadsheet, schema.sheet, schema.fields))
 }
@@ -146,10 +151,14 @@ function authenticate_(idToken) {
   const clientId = properties.getProperty('GOOGLE_CLIENT_ID')
   const allowedEmail = properties.getProperty('ALLOWED_EMAIL')
   if (!clientId || !allowedEmail || !idToken) throw new Error('Требуется вход через Google')
+  const cache = CacheService.getScriptCache()
+  const tokenKey = `token:${Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, idToken))}`
+  if (cache.get(tokenKey) === allowedEmail.toLowerCase()) return
   const response = UrlFetchApp.fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(idToken)}`, { muteHttpExceptions: true })
   if (response.getResponseCode() !== 200) throw new Error('Недействительный Google-токен')
   const identity = JSON.parse(response.getContentText())
   if (identity.aud !== clientId || (identity.email_verified !== 'true' && identity.email_verified !== true) || String(identity.email).toLowerCase() !== allowedEmail.toLowerCase()) throw new Error('У пользователя нет доступа')
+  cache.put(tokenKey, allowedEmail.toLowerCase(), Math.min(300, Math.max(1, Number(identity.expires_in) || 300)))
 }
 
 function required_(value, field) {
