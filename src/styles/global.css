@@ -901,8 +901,10 @@ button {
 
 @media(max-width:720px) {
   .topbar {
-    height: 62px;
-    padding: 0 17px;
+    height: calc(62px + env(safe-area-inset-top,0px));
+    padding-top: env(safe-area-inset-top,0px);
+    padding-right: max(17px,env(safe-area-inset-right,0px));
+    padding-left: max(17px,env(safe-area-inset-left,0px));
   }
 
   .brand span:last-child {
