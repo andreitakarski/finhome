@@ -4,6 +4,7 @@ import { loadFinanceData, queueFinanceMutations, saveFinanceData } from '../util
 import { createMutations } from '../utils/syncEntities'
 import { fetchNBRBRates } from '../utils/currencyApi'
 import { INITIAL_DATA } from '../constants/finance'
+import { recordMortgagePayment } from '../utils/mortgage'
 
 export function useFinanceData() {
   const [data, setData] = useState(() => structuredClone(INITIAL_DATA))
@@ -70,11 +71,7 @@ export function useFinanceData() {
   function addMortgagePayment(payment) {
     setData((current) => ({
       ...current,
-      mortgage: {
-        ...current.mortgage,
-        balanceUSD: Math.max(0, current.mortgage.balanceUSD - payment.principalUSD),
-        payments: [{ id: crypto.randomUUID(), date: new Date().toISOString(), ...payment }, ...current.mortgage.payments],
-      },
+      mortgage: recordMortgagePayment(current.mortgage, payment),
     }))
   }
 

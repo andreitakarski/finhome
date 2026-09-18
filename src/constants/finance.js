@@ -1,3 +1,5 @@
+import { DEFAULT_MORTGAGE } from '../utils/mortgage'
+
 export const CURRENCIES = ['USD', 'EUR', 'BYN']
 export const CASH_CURRENCIES = ['USD', 'EUR']
 
@@ -14,10 +16,5 @@ export const INITIAL_DATA = {
   cards: [],
   rates: { USD: 3.28, EUR: 3.57 },
   ratesUpdatedAt: null,
-  mortgage: {
-    originalUSD: 85000,
-    balanceUSD: 68420,
-    rate: 12.5,
-    payments: [],
-  },
+  mortgage: structuredClone(DEFAULT_MORTGAGE),
 }

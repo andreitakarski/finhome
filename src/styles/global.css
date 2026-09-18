@@ -503,6 +503,11 @@ button {
   padding-top: 55px;
 }
 
+.mortgage-page {
+  max-width: 1120px;
+  padding-top: 55px;
+}
+
 .page-title {
   font-size: 38px;
   margin-bottom: 26px;
@@ -535,6 +540,82 @@ button {
   color: var(--muted);
   font-size: 13px;
 }
+
+.mortgage-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.next-payment {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 18px;
+  border-radius: 14px;
+  background: #f3f5ef;
+}
+
+.next-payment svg { color: var(--gold-dark); }
+.next-payment span { display: flex; flex-direction: column; font-size: 12px; color: var(--muted); }
+.next-payment small { margin-top: 3px; }
+.next-payment b { white-space: nowrap; }
+.next-payment b small { display: block; margin-top: 4px; color: var(--muted); font-size: 10px; text-align: right; }
+
+.mortgage-metrics {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.mortgage-metrics>div {
+  display: flex;
+  min-height: 86px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 7px;
+  padding: 17px;
+  border: 1px solid #e5e9e3;
+  border-radius: 15px;
+  background: #fff;
+}
+
+.mortgage-metrics span { color: var(--muted); font-size: 11px; }
+.mortgage-metrics b { font-size: 16px; }
+.mortgage-metrics>div>small { color: var(--muted); font-size: 11px; }
+.mortgage-metrics .accent { background: #f4f8ed; border-color: #dce8cf; }
+.mortgage-metrics .accent b { color: var(--green); }
+
+.loan-terms {
+  margin-top: 16px;
+  padding: 18px 22px;
+  border: 1px solid #e5e9e3;
+  border-radius: 15px;
+  background: #fff;
+}
+
+.loan-terms summary { cursor: pointer; font-weight: 700; }
+.loan-terms>div { display: flex; justify-content: space-between; gap: 20px; padding-top: 13px; font-size: 13px; }
+.loan-terms span { color: var(--muted); }
+.loan-terms b { text-align: right; }
+
+.schedule-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.schedule-tabs button { border: 1px solid #dce2dc; border-radius: 999px; background: #fff; padding: 9px 15px; color: var(--muted); }
+.schedule-tabs button.active { background: var(--green); border-color: var(--green); color: #fff; }
+.schedule-card { padding: 0; overflow: hidden; }
+.schedule-scroll { max-height: 540px; overflow: auto; }
+.mortgage-schedule { width: 100%; border-collapse: collapse; font-size: 12px; }
+.mortgage-schedule th { position: sticky; top: 0; z-index: 1; padding: 12px 14px; background: #f4f6f2; color: var(--muted); text-align: right; white-space: nowrap; }
+.mortgage-schedule th:first-child,.mortgage-schedule td:first-child { text-align: left; }
+.mortgage-schedule td { padding: 11px 14px; border-top: 1px solid #edf0ec; text-align: right; white-space: nowrap; }
+.mortgage-schedule tr.paid { background: #f5f9ef; }
+.mortgage-schedule td small { display: block; color: var(--green); font-size: 9px; }
+.mortgage-transaction .transaction-info small { display: block; color: var(--muted); margin-top: 3px; }
+.payment-breakdown { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 4px 0 15px; }
+.payment-breakdown span { display: flex; flex-direction: column; gap: 5px; padding: 10px; border-radius: 10px; background: #f4f6f2; color: var(--muted); font-size: 10px; }
+.payment-breakdown b { color: var(--text); font-size: 12px; }
 
 .progress {
   height: 8px;
@@ -900,6 +981,8 @@ button {
     padding-top: 34px;
   }
 
+  .mortgage-page { padding-top: 34px; }
+
   .page-title {
     font-size: 31px;
   }
@@ -911,6 +994,13 @@ button {
   .mortgage-title h2 {
     font-size: 30px;
   }
+
+  .mortgage-summary { align-items: stretch; flex-direction: column; }
+  .next-payment { justify-content: space-between; }
+  .mortgage-metrics { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .mortgage-metrics>div { min-height: 76px; padding: 13px; }
+  .mortgage-metrics b { font-size: 14px; }
+  .payment-breakdown { grid-template-columns: 1fr; }
 
   .stats-grid {
     gap: 9px;

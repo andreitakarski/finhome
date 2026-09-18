@@ -5,8 +5,8 @@ const SCHEMAS = {
   card: { sheet: 'Cards', fields: ['id','bank','name','currency','updatedAt','deletedAt'] },
   debt: { sheet: 'Debts', fields: ['id','direction','person','currency','originalAmount','remainingAmount','note','createdAt','updatedAt','deletedAt'] },
   repayment: { sheet: 'Repayments', fields: ['id','debtId','amount','date','updatedAt','deletedAt'] },
-  mortgagePayment: { sheet: 'MortgagePayments', fields: ['id','amountBYN','principalUSD','date','updatedAt','deletedAt'] },
-  mortgage: { sheet: 'Mortgage', fields: ['id','originalUSD','balanceUSD','rate','updatedAt','deletedAt'] },
+  mortgagePayment: { sheet: 'MortgagePayments', fields: ['id','date','scheduledFor','amountBYN','plannedAmountBYN','interestBYN','principalBYN','extraPrincipalBYN','exchangeRateUSD','exchangeRateDate','amountUSD','interestUSD','principalUSD','extraPrincipalUSD','balanceAfterBYN','earlyRepaymentStrategy','updatedAt','deletedAt'] },
+  mortgage: { sheet: 'Mortgage', fields: ['id','principalBYN','balanceBYN','issuedAt','maturityDate','firstPaymentDate','principalStartDate','standardRateStartDate','preferentialRate','standardRate','earlyRepaymentStrategy','firstPaymentBYN','interestOnlyPaymentBYN','preferentialAnnuityBYN','transitionPaymentBYN','standardAnnuityBYN','updatedAt','deletedAt'] },
 }
 const LOG_FIELDS = ['seq','mutationId','entity','entityId','action','createdAt','deviceId']
 
@@ -121,7 +121,16 @@ function ensureSheet_(spreadsheet, name, fields) {
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, fields.length).setValues([fields]).setFontWeight('bold')
     sheet.setFrozenRows(1)
+    return
   }
+  const currentFields = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getDisplayValues()[0].filter(Boolean)
+  if (currentFields.join('|') === fields.join('|')) return
+  const oldRows = sheet.getLastRow() < 2 ? [] : sheet.getRange(2, 1, sheet.getLastRow() - 1, currentFields.length).getValues()
+  const migratedRows = oldRows.map((row) => fields.map((field) => row[currentFields.indexOf(field)] ?? ''))
+  sheet.clearContents()
+  sheet.getRange(1, 1, 1, fields.length).setValues([fields]).setFontWeight('bold')
+  if (migratedRows.length) sheet.getRange(2, 1, migratedRows.length, fields.length).setValues(migratedRows)
+  sheet.setFrozenRows(1)
 }
 
 function spreadsheet_() {

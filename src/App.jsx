@@ -44,13 +44,13 @@ export default function App() {
     <Header onHome={() => setPage('savings')} onSettings={() => setPage('settings')} syncStatus={syncStatus}/>
     <main>
       {page === 'savings' && <SavingsPage data={data} totals={totals} onMoneyAction={openMoneyModal}/>} 
-      {page === 'mortgage' && <MortgagePage mortgage={data.mortgage} usdRate={data.rates.USD} onAddPayment={() => setModal({ type: 'payment' })}/>} 
+      {page === 'mortgage' && <MortgagePage mortgage={data.mortgage} usdRate={data.rates.USD} onAddPayment={() => setModal({ type: 'payment' })}/>}
       {page === 'debts' && <DebtsPage debts={data.debts} rates={data.rates} savingsTotals={totals} onRepay={(debt) => setModal({ type: 'repayment', debt })}/>} 
       {page === 'settings' && <SettingsPage data={data} setData={setData} notify={notify} googleAuth={googleAuth} onGoogleAuthChange={setGoogleAuth}/>}
     </main>
     <BottomNavigation page={page} onNavigate={setPage} onQuickAdd={() => page === 'debts' ? setModal({ type: 'debt' }) : openMoneyModal('in', 'cash')}/>
     {modal?.type === 'money' && <MoneyModal data={data} initial={modal} onClose={() => setModal(null)} onSave={saveTransaction}/>} 
-    {modal?.type === 'payment' && <PaymentModal mortgage={data.mortgage} usdRate={data.rates.USD} onClose={() => setModal(null)} onSave={savePayment}/>} 
+    {modal?.type === 'payment' && <PaymentModal mortgage={data.mortgage} onClose={() => setModal(null)} onSave={savePayment}/>}
     {modal?.type === 'debt' && <DebtModal onClose={() => setModal(null)} onSave={saveDebt}/>} 
     {modal?.type === 'repayment' && <RepaymentModal debt={modal.debt} onClose={() => setModal(null)} onSave={saveRepayment}/>} 
     {toast && <div className="toast">{toast}</div>}

@@ -16,3 +16,15 @@ export async function fetchNBRBRates(signal) {
     updatedAt: currencies[0]?.Date || new Date().toISOString(),
   }
 }
+
+export async function fetchUSD_BYNRateOnDate(date, signal) {
+  const day = String(date).slice(0, 10)
+  const response = await fetch(`https://api.nbrb.by/exrates/rates/USD?parammode=2&ondate=${day}`, { signal })
+  if (!response.ok) throw new Error(`НБРБ не вернул курс USD за ${day}`)
+  const currency = await response.json()
+  if (!currency?.Cur_OfficialRate || !currency?.Cur_Scale) throw new Error('Курс USD на выбранную дату не найден')
+  return {
+    rate: currency.Cur_OfficialRate / currency.Cur_Scale,
+    date: String(currency.Date || day).slice(0, 10),
+  }
+}

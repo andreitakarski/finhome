@@ -1,4 +1,5 @@
 import { INITIAL_DATA } from '../constants/finance'
+import { normalizeMortgage } from './mortgage'
 
 const DB_NAME = 'finhome'
 const DB_VERSION = 2
@@ -67,7 +68,7 @@ function normalizeData(saved) {
     bank,
     currency: 'BYN',
   }))
-  return { ...structuredClone(INITIAL_DATA), ...saved, cards, debts: saved.debts || [] }
+  return { ...structuredClone(INITIAL_DATA), ...saved, cards, debts: saved.debts || [], mortgage: normalizeMortgage(saved.mortgage) }
 }
 
 export async function loadFinanceData() {

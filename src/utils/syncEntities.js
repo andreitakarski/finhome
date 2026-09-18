@@ -1,13 +1,22 @@
 const without = (object, keys) => Object.fromEntries(Object.entries(object).filter(([key]) => !keys.includes(key)))
 
 export function stateEntities(data) {
+  const mortgage = data.mortgage
   return {
     transaction: data.transactions.map((item) => ({ ...item })),
     card: data.cards.map((item) => ({ ...item })),
     debt: data.debts.map((item) => without(item, ['repayments'])),
     repayment: data.debts.flatMap((debt) => debt.repayments.map((item) => ({ ...item, debtId: debt.id }))),
-    mortgagePayment: data.mortgage.payments.map((item) => ({ ...item })),
-    mortgage: [{ ...without(data.mortgage, ['payments']), id: 'main' }],
+    mortgagePayment: mortgage.payments.map((item) => ({ ...item })),
+    mortgage: [{
+      ...without(mortgage, ['payments', 'contractPayments']),
+      firstPaymentBYN: mortgage.contractPayments.first,
+      interestOnlyPaymentBYN: mortgage.contractPayments.interestOnly,
+      preferentialAnnuityBYN: mortgage.contractPayments.preferentialAnnuity,
+      transitionPaymentBYN: mortgage.contractPayments.transition,
+      standardAnnuityBYN: mortgage.contractPayments.standardAnnuity,
+      id: 'main',
+    }],
   }
 }
 
@@ -49,8 +58,27 @@ export function applyChanges(data, changes) {
         ? { ...debt, repayments: updateList(debt.repayments, change, record && without(record, ['debtId'])) }
         : debt)
     }
-    if (change.entity === 'mortgagePayment') next.mortgage.payments = updateList(next.mortgage.payments, change, record)
-    if (change.entity === 'mortgage' && change.action !== 'delete' && record) next.mortgage = { ...next.mortgage, originalUSD: Number(record.originalUSD), balanceUSD: Number(record.balanceUSD), rate: Number(record.rate) }
+    if (change.entity === 'mortgagePayment' && (change.action === 'delete' || (Number(record?.amountBYN) > 0 && Number(record?.exchangeRateUSD) > 0))) next.mortgage.payments = updateList(next.mortgage.payments, change, record)
+    if (change.entity === 'mortgage' && change.action !== 'delete' && Number(record?.principalBYN) > 0) next.mortgage = {
+      ...next.mortgage,
+      principalBYN: Number(record.principalBYN),
+      balanceBYN: Number(record.balanceBYN),
+      issuedAt: record.issuedAt,
+      maturityDate: record.maturityDate,
+      firstPaymentDate: record.firstPaymentDate,
+      principalStartDate: record.principalStartDate,
+      standardRateStartDate: record.standardRateStartDate,
+      preferentialRate: Number(record.preferentialRate),
+      standardRate: Number(record.standardRate),
+      earlyRepaymentStrategy: record.earlyRepaymentStrategy,
+      contractPayments: {
+        first: Number(record.firstPaymentBYN),
+        interestOnly: Number(record.interestOnlyPaymentBYN),
+        preferentialAnnuity: Number(record.preferentialAnnuityBYN),
+        transition: Number(record.transitionPaymentBYN),
+        standardAnnuity: Number(record.standardAnnuityBYN),
+      },
+    }
   })
   return next
 }
