@@ -5,20 +5,26 @@ import { getDeviceId, getLastSeq, getOutbox, queueFinanceData, removeFromOutbox,
 export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData }) {
   const [status, setStatus] = useState(auth ? 'idle' : 'local')
   const syncing = useRef(false)
+  const resyncRequested = useRef(false)
   const dataRef = useRef(data)
   const remoteDataRef = useRef(onRemoteData)
   dataRef.current = data
   remoteDataRef.current = onRemoteData
 
   const synchronize = useCallback(async () => {
-    if (!auth?.token || !isLoaded || syncing.current) return
+    if (!auth?.token || !isLoaded) return
+    if (syncing.current) {
+      resyncRequested.current = true
+      return
+    }
     if (!navigator.onLine) return setStatus('offline')
     syncing.current = true
     setStatus('syncing')
 
     try {
-      for (let attempt = 0; attempt < 2; attempt += 1) {
+      for (let attempt = 0; attempt < 5; attempt += 1) {
         const [deviceId, lastSeq, mutations] = await Promise.all([getDeviceId(), getLastSeq(), getOutbox()])
+        const dataAtRequestStart = dataRef.current
         const response = await fetch(SYNC_API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -28,13 +34,22 @@ export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData 
         if (!result.ok) throw new Error(result.error || 'Ошибка синхронизации')
 
         const remoteStates = result.changes.filter((change) => change.entity === 'appState' && change.action === 'upsert')
+        await Promise.all([removeFromOutbox(result.acceptedMutationIds || []), setLastSeq(result.lastSeq)])
+        const remainingMutations = await getOutbox()
+
+        // Не применяем ответ, если пользователь успел изменить данные во время запроса.
+        if (dataRef.current !== dataAtRequestStart || remainingMutations.length > 0) {
+          if (attempt < 4 && remainingMutations.length > 0) continue
+          resyncRequested.current = true
+          break
+        }
+
         const latestRemote = remoteStates.at(-1)
         if (latestRemote?.payload) {
           dataRef.current = latestRemote.payload
           await saveFinanceData(latestRemote.payload)
           remoteDataRef.current(latestRemote.payload)
         }
-        await Promise.all([removeFromOutbox(result.acceptedMutationIds || []), setLastSeq(result.lastSeq)])
 
         if (attempt === 0 && lastSeq === 0 && mutations.length === 0 && remoteStates.length === 0) {
           await queueFinanceData(dataRef.current)
@@ -48,6 +63,10 @@ export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData 
       setStatus(error.message === 'Failed to fetch' ? 'offline' : 'error')
     } finally {
       syncing.current = false
+      if (resyncRequested.current) {
+        resyncRequested.current = false
+        window.setTimeout(synchronize, 0)
+      }
     }
   }, [auth?.token, isLoaded])
 
