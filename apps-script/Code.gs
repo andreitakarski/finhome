@@ -1,5 +1,6 @@
 const CHANGE_LOG = 'ChangeLog'
 const MAX_MUTATIONS = 100
+const SCHEMA_VERSION = '3'
 const SCHEMAS = {
   transaction: { sheet: 'Transactions', fields: ['id','date','direction','source','currency','amount','denomination','quantity','cardId','cardName','note','updatedAt','deletedAt'] },
   card: { sheet: 'Cards', fields: ['id','bank','name','currency','updatedAt','deletedAt'] },
@@ -34,7 +35,8 @@ function resetStorage() {
     const sheet = spreadsheet.getSheetByName(name)
     if (sheet) spreadsheet.deleteSheet(sheet)
   })
-  ensureSheets_()
+  ensureSheets_(spreadsheet)
+  PropertiesService.getScriptProperties().setProperty('FINHOME_SCHEMA_VERSION', SCHEMA_VERSION)
   spreadsheet.deleteSheet(temporary)
 }
 
@@ -47,7 +49,7 @@ function sync_(request) {
   lock.waitLock(10000)
   try {
     const spreadsheet = spreadsheet_()
-    ensureSheets_(spreadsheet)
+    ensureCurrentSchema_(spreadsheet)
     const log = spreadsheet.getSheetByName(CHANGE_LOG)
     const known = mutations.length ? existingMutationIds_(log) : new Set()
     const accepted = []
@@ -64,7 +66,7 @@ function sync_(request) {
       accepted.push(mutation.mutationId)
     })
     if (logRows.length) log.getRange(log.getLastRow() + 1, 1, logRows.length, LOG_FIELDS.length).setValues(logRows)
-    return { ok: true, lastSeq: seq, acceptedMutationIds: accepted, changes: changesAfter_(log, lastSeq) }
+    return { ok: true, lastSeq: seq, acceptedMutationIds: accepted, changes: changesAfter_(spreadsheet, log, lastSeq) }
   } finally {
     lock.releaseLock()
   }
@@ -87,24 +89,23 @@ function upsertEntity_(spreadsheet, mutation) {
   else sheet.appendRow(row)
 }
 
-function changesAfter_(log, lastSeq) {
+function changesAfter_(spreadsheet, log, lastSeq) {
   const lastRow = log.getLastRow()
   const firstRow = Math.max(2, lastSeq + 2)
   if (firstRow > lastRow) return []
-  return log.getRange(firstRow, 1, lastRow - firstRow + 1, LOG_FIELDS.length).getValues()
-    .map((row) => {
+  const rows = log.getRange(firstRow, 1, lastRow - firstRow + 1, LOG_FIELDS.length).getValues()
+  const entityMaps = new Map()
+  new Set(rows.map((row) => String(row[2]))).forEach((entity) => {
+    const schema = SCHEMAS[entity]
+    const sheet = spreadsheet.getSheetByName(schema.sheet)
+    const values = sheet.getLastRow() < 2 ? [] : sheet.getRange(2, 1, sheet.getLastRow() - 1, schema.fields.length).getValues()
+    entityMaps.set(entity, new Map(values.map((row) => [String(row[0]), rowToObject_(schema.fields, row)])))
+  })
+  return rows.map((row) => {
       const entity = String(row[2])
       const entityId = String(row[3])
-      return { seq: Number(row[0]), mutationId: String(row[1]), entity, entityId, action: String(row[4]), createdAt: iso_(row[5]), deviceId: String(row[6]), data: readEntity_(entity, entityId) }
+      return { seq: Number(row[0]), mutationId: String(row[1]), entity, entityId, action: String(row[4]), createdAt: iso_(row[5]), deviceId: String(row[6]), data: entityMaps.get(entity).get(entityId) || null }
     })
-}
-
-function readEntity_(entity, entityId) {
-  const schema = SCHEMAS[entity]
-  const sheet = spreadsheet_().getSheetByName(schema.sheet)
-  if (sheet.getLastRow() < 2) return null
-  const row = sheet.getRange(2, 1, sheet.getLastRow() - 1, schema.fields.length).getValues().find((item) => String(item[0]) === entityId)
-  return row ? rowToObject_(schema.fields, row) : null
 }
 
 function rowToObject_(fields, row) {
@@ -115,6 +116,13 @@ function ensureSheets_(spreadsheet) {
   spreadsheet = spreadsheet || spreadsheet_()
   ensureSheet_(spreadsheet, CHANGE_LOG, LOG_FIELDS)
   Object.values(SCHEMAS).forEach((schema) => ensureSheet_(spreadsheet, schema.sheet, schema.fields))
+}
+
+function ensureCurrentSchema_(spreadsheet) {
+  const properties = PropertiesService.getScriptProperties()
+  if (properties.getProperty('FINHOME_SCHEMA_VERSION') === SCHEMA_VERSION) return
+  ensureSheets_(spreadsheet)
+  properties.setProperty('FINHOME_SCHEMA_VERSION', SCHEMA_VERSION)
 }
 
 function ensureSheet_(spreadsheet, name, fields) {
@@ -147,7 +155,7 @@ function existingMutationIds_(log) {
 
 function lastSequence_(log) {
   if (log.getLastRow() < 2) return 0
-  return Math.max.apply(null, log.getRange(2, 1, log.getLastRow() - 1, 1).getValues().flat().map(Number))
+  return Number(log.getRange(log.getLastRow(), 1).getValue()) || 0
 }
 
 function validateMutation_(mutation) {
@@ -169,7 +177,7 @@ function authenticate_(idToken) {
   if (response.getResponseCode() !== 200) throw new Error('Недействительный Google-токен')
   const identity = JSON.parse(response.getContentText())
   if (identity.aud !== clientId || (identity.email_verified !== 'true' && identity.email_verified !== true) || String(identity.email).toLowerCase() !== allowedEmail.toLowerCase()) throw new Error('У пользователя нет доступа')
-  cache.put(tokenKey, allowedEmail.toLowerCase(), Math.min(300, Math.max(1, Number(identity.expires_in) || 300)))
+  cache.put(tokenKey, allowedEmail.toLowerCase(), Math.min(3300, Math.max(1, Number(identity.expires_in) || 300)))
 }
 
 function required_(value, field) {

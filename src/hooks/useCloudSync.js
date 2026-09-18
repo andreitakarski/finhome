@@ -3,7 +3,7 @@ import { SYNC_API_URL } from '../constants/sync'
 import { getDeviceId, getLastSeq, getOutbox, queueFinanceMutations, removeFromOutbox, saveFinanceData, setLastSeq } from '../utils/storage'
 import { applyChanges, createMutations } from '../utils/syncEntities'
 
-const SYNC_INTERVAL_MS = 15000
+const SYNC_INTERVAL_MS = 5000
 
 export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData }) {
   const [status, setStatus] = useState(auth ? 'idle' : 'local')
@@ -82,7 +82,9 @@ export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData 
     const visible = () => document.visibilityState === 'visible' && synchronize()
     window.addEventListener('online', online)
     document.addEventListener('visibilitychange', visible)
-    const interval = window.setInterval(synchronize, SYNC_INTERVAL_MS)
+    const interval = window.setInterval(() => {
+      if (document.visibilityState === 'visible') synchronize()
+    }, SYNC_INTERVAL_MS)
     return () => {
       window.removeEventListener('online', online)
       document.removeEventListener('visibilitychange', visible)
