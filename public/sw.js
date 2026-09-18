@@ -1,6 +1,6 @@
-const CACHE = 'finhome-v2'
+const CACHE = 'finhome-v3'
 const BASE = self.registration.scope
-const ASSETS = [BASE, `${BASE}index.html`, `${BASE}manifest.webmanifest`, `${BASE}icon.svg`]
+const ASSETS = [BASE, `${BASE}index.html`, `${BASE}manifest.webmanifest`, `${BASE}pwa-icon-192.png`, `${BASE}pwa-icon-512.png`]
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((cache) => cache.addAll(ASSETS)))
