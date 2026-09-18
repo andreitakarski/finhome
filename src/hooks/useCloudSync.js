@@ -26,7 +26,8 @@ export function useCloudSync({ auth, data, isLoaded, changeSignal, onRemoteData 
 
     try {
       for (let attempt = 0; attempt < 5; attempt += 1) {
-        const [deviceId, lastSeq, mutations] = await Promise.all([getDeviceId(), getLastSeq(), getOutbox()])
+        const [deviceId, lastSeq, outbox] = await Promise.all([getDeviceId(), getLastSeq(), getOutbox()])
+        const mutations = outbox.slice(0, 100)
         const dataAtRequestStart = dataRef.current
         const response = await fetch(SYNC_API_URL, {
           method: 'POST',

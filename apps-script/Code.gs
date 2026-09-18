@@ -77,6 +77,8 @@ function upsertEntity_(spreadsheet, mutation) {
   const index = values.slice(1).findIndex((row) => String(row[0]) === mutation.entityId)
   const current = index >= 0 ? rowToObject_(schema.fields, values[index + 1]) : {}
   const now = mutation.createdAt
+  // Старое офлайн-устройство не должно восстановить запись, удалённую позднее.
+  if (current.updatedAt && new Date(current.updatedAt).getTime() > new Date(now).getTime()) return
   const record = mutation.action === 'delete'
     ? { ...current, id: mutation.entityId, updatedAt: now, deletedAt: now }
     : { ...mutation.data, id: mutation.entityId, updatedAt: now, deletedAt: '' }
